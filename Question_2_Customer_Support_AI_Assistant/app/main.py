@@ -1,6 +1,7 @@
 import logging
 import os
 import tempfile
+from pathlib import Path
 from fastapi import Depends, FastAPI, File, HTTPException, UploadFile
 from fastapi.responses import RedirectResponse
 from fastapi.staticfiles import StaticFiles
@@ -27,6 +28,26 @@ app = FastAPI(
 )
 
 app.mount("/assistant", StaticFiles(directory="app/static", html=True), name="assistant")
+
+
+@app.on_event("startup")
+def seed_knowledge_base():
+    db = next(get_db())
+    try:
+        if db.query(KnowledgeChunk).count() == 0:
+            faq_path = Path(__file__).resolve().parents[1] / "sample_data" / "faq.txt"
+            if faq_path.exists():
+                text = faq_path.read_text(encoding="utf-8")
+                chunks = chunk_text(text)
+                doc = Document(filename="faq.txt", content=text)
+                db.add(doc)
+                db.flush()
+                for chunk in chunks:
+                    db.add(KnowledgeChunk(document_id=doc.id, chunk_text=chunk))
+                db.commit()
+                logger.info("Seeded knowledge base with %d chunks from faq.txt", len(chunks))
+    finally:
+        db.close()
 
 
 @app.get("/")
