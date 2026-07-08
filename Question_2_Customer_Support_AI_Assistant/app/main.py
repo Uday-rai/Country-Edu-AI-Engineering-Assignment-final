@@ -2,6 +2,7 @@ import logging
 import os
 import tempfile
 from fastapi import Depends, FastAPI, File, HTTPException, UploadFile
+from fastapi.responses import RedirectResponse
 from fastapi.staticfiles import StaticFiles
 from sqlalchemy.orm import Session
 
@@ -26,6 +27,11 @@ app = FastAPI(
 )
 
 app.mount("/assistant", StaticFiles(directory="app/static", html=True), name="assistant")
+
+
+@app.get("/")
+def root():
+    return RedirectResponse(url="/assistant/")
 
 
 @app.get("/health")

@@ -6,12 +6,10 @@ I built this as a FastAPI service that lets you upload company documents and ask
 
 ```bash
 python -m pip install -r requirements.txt
-python -m uvicorn app.main:app --host 127.0.0.1 --port 8010
+python run.py
 ```
 
-Assistant UI: **http://127.0.0.1:8010/assistant**
-
-Swagger docs: http://127.0.0.1:8010/docs
+The script picks a free port automatically and prints the URL to open.
 
 SQLite is the default — no database setup needed. To run with PostgreSQL instead:
 

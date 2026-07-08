@@ -2,7 +2,7 @@ import logging
 import os
 import tempfile
 from fastapi import Depends, FastAPI, File, HTTPException, UploadFile
-from fastapi.responses import StreamingResponse
+from fastapi.responses import RedirectResponse, StreamingResponse
 from fastapi.staticfiles import StaticFiles
 from sqlalchemy.orm import Session
 
@@ -27,6 +27,11 @@ app = FastAPI(
 )
 
 app.mount("/dashboard", StaticFiles(directory="app/static", html=True), name="dashboard")
+
+
+@app.get("/")
+def root():
+    return RedirectResponse(url="/dashboard/")
 
 
 def split_csv(value: str) -> list[str]:

@@ -6,12 +6,10 @@ I built this to automate the manual part of resume screening — upload a stack 
 
 ```bash
 python -m pip install -r requirements.txt
-python -m uvicorn app.main:app --host 127.0.0.1 --port 8000
+python run.py
 ```
 
-Dashboard: **http://127.0.0.1:8000/dashboard/?v=3**
-
-Swagger docs: http://127.0.0.1:8000/docs
+The script picks a free port automatically and prints the URL to open.
 
 SQLite is the default — no database setup needed. To run with PostgreSQL instead:
 
