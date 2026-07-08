@@ -2,16 +2,18 @@
 
 I built this to automate the manual part of resume screening — upload a stack of PDFs or DOCXs and the system pulls out each candidate's info, scores them against a job description, and ranks the results. From there you can filter by skill or experience level, generate interview questions for a specific candidate, or export the shortlist to CSV.
 
-## Setup and Run
+## Run
 
 ```bash
-pip install -r requirements.txt
-uvicorn app.main:app --host 127.0.0.1 --port 8000
+python -m pip install -r requirements.txt
+python -m uvicorn app.main:app --host 127.0.0.1 --port 8000
 ```
 
-Dashboard at `http://127.0.0.1:8000/dashboard/?v=3` — Swagger docs at `http://127.0.0.1:8000/docs`.
+Dashboard: **http://127.0.0.1:8000/dashboard/?v=3**
 
-SQLite is the default, so no database setup needed. To run with PostgreSQL instead:
+Swagger docs: http://127.0.0.1:8000/docs
+
+SQLite is the default — no database setup needed. To run with PostgreSQL instead:
 
 ```bash
 docker-compose up --build

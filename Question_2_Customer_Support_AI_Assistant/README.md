@@ -1,42 +1,38 @@
 # Customer Support Knowledge Base Assistant
 
-I built this as a FastAPI service that lets you upload company docs and answer support questions against that knowledge base. If there isn't enough information to answer confidently, it returns `I don't know` and queues an escalation.
+I built this as a FastAPI service that lets you upload company documents and ask support questions against them. If the knowledge base doesn't have enough to answer confidently, it returns a clear "I don't know" and queues the query for escalation.
 
-## Setup and Run
+## Run
 
 ```bash
-pip install -r requirements.txt
-uvicorn app.main:app --host 127.0.0.1 --port 8010
+python -m pip install -r requirements.txt
+python -m uvicorn app.main:app --host 127.0.0.1 --port 8010
 ```
 
-Open:
+Assistant UI: **http://127.0.0.1:8010/assistant**
 
-- Assistant UI: `http://127.0.0.1:8010/assistant`
-- Swagger docs: `http://127.0.0.1:8010/docs`
+Swagger docs: http://127.0.0.1:8010/docs
 
-SQLite is used by default — no database setup required. To run with PostgreSQL, use Docker:
+SQLite is the default — no database setup needed. To run with PostgreSQL instead:
 
 ```bash
 docker-compose up --build
 ```
 
-## Features
+## How It Works
 
-- PDF, DOCX and TXT knowledge base upload
-- Document parsing and chunking
-- Retrieval-based answer generation
-- Conversation history by session
-- Escalation for unanswered queries
+Upload one or more documents (PDF, DOCX, or TXT) and the service chunks and indexes them. When a question comes in, it retrieves the most relevant chunks and builds an answer. Conversation history is tracked per session, so follow-up questions have context. Anything the system can't answer confidently gets logged as an escalation.
 
-## Main Endpoints
+## Endpoints
 
-- `GET /health`
-- `POST /documents/upload`
-- `POST /chat`
-- `GET /sessions/{session_id}/history`
-- `GET /escalations`
+| Method | Path | What It Does |
+|---|---|---|
+| GET | `/health` | Service health check |
+| POST | `/documents/upload` | Upload PDF, DOCX, or TXT files |
+| POST | `/chat` | Ask a question against the knowledge base |
+| GET | `/sessions/{session_id}/history` | View conversation history for a session |
+| GET | `/escalations` | List queries that couldn't be answered |
 
 ## Sample Data
 
-Use `sample_data/faq.txt` for a quick demo.
-
+`sample_data/faq.txt` has a sample knowledge base ready to upload for a quick demo.
