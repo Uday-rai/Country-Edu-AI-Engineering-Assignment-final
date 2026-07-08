@@ -1,4 +1,4 @@
-# Uday — DS & AI Internship Submission
+# AI Enginering Submission
 
 Two FastAPI services: a resume screening system and a customer support assistant.
 
