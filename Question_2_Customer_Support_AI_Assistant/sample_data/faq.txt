@@ -1,0 +1,16 @@
+Company Support FAQ
+
+Refunds:
+Customers can request a refund within 7 days of purchase if the product has not been used heavily and the order is eligible under company policy.
+
+Shipping:
+Standard shipping normally takes 3 to 5 business days. Express shipping normally takes 1 to 2 business days.
+
+Password Reset:
+Customers can reset their password by selecting Forgot Password on the login page. A secure reset link will be sent to the registered email address.
+
+Support Hours:
+Human support agents are available from 9 AM to 6 PM, Monday to Saturday.
+
+Escalation:
+Billing disputes, legal complaints, account ownership conflicts, and technical outages should be escalated to a human support specialist.

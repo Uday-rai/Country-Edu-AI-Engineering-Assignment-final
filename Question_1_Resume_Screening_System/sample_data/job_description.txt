@@ -1,0 +1,3 @@
+AI Engineer Intern
+
+We need a Python developer with practical experience in NLP, FastAPI, SQL, Docker, and machine learning. The candidate should understand REST APIs, text processing, resume parsing, vector similarity, and database-backed application design. PostgreSQL experience is preferred.

@@ -1,0 +1,212 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Resume Screening Dashboard</title>
+  <style>
+    body { margin: 0; font-family: Arial, sans-serif; background: #f6f7f9; color: #1f2933; }
+    header { background: #243b53; color: white; padding: 18px 28px; }
+    main { max-width: 1120px; margin: 24px auto; padding: 0 18px; display: grid; gap: 18px; }
+    section { background: white; border: 1px solid #d9e2ec; border-radius: 8px; padding: 18px; }
+    label { display: block; font-weight: 700; margin: 12px 0 6px; }
+    input, textarea { width: 100%; box-sizing: border-box; padding: 10px; border: 1px solid #bcccdc; border-radius: 6px; }
+    textarea { min-height: 120px; resize: vertical; }
+    button { margin-top: 12px; padding: 10px 14px; border: 0; border-radius: 6px; background: #0b7285; color: white; cursor: pointer; }
+    button:disabled { background: #9fb3c8; cursor: not-allowed; }
+    button.secondary { background: #486581; }
+    .status { margin-top: 12px; padding: 10px 12px; border-radius: 6px; display: none; }
+    .status.ok { display: block; background: #e3fcef; border: 1px solid #8eedb2; color: #014d40; }
+    .status.error { display: block; background: #ffe3e3; border: 1px solid #ff9b9b; color: #8a041a; }
+    .status.info { display: block; background: #e7f5ff; border: 1px solid #91d5ff; color: #0b4f6c; }
+    .filters { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+    table { width: 100%; border-collapse: collapse; margin-top: 12px; }
+    th, td { border-bottom: 1px solid #d9e2ec; text-align: left; padding: 10px; vertical-align: top; }
+    th { background: #f0f4f8; }
+    .score { font-weight: 700; color: #0b7285; }
+    @media (max-width: 760px) { .filters { grid-template-columns: 1fr; } }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Resume Screening Dashboard</h1>
+  </header>
+  <main>
+    <section>
+      <h2>Job Description</h2>
+      <label>Title</label>
+      <input id="title" value="AI Engineer Intern">
+      <label>Description</label>
+      <textarea id="description">We need a Python developer with NLP, FastAPI, SQL, Docker, and machine learning experience.</textarea>
+      <label>Required skills, comma separated</label>
+      <input id="required" value="python, fastapi, nlp, sql">
+      <label>Preferred skills, comma separated</label>
+      <input id="preferred" value="docker, postgresql, scikit-learn">
+      <label>Minimum experience in years</label>
+      <input id="experience" type="number" value="1">
+      <button id="saveJobButton" onclick="saveJob()">Save Job Description</button>
+      <div id="jobStatus" class="status"></div>
+    </section>
+
+    <section>
+      <h2>Upload Resumes</h2>
+      <input id="resumes" type="file" multiple accept=".pdf,.docx">
+      <button id="uploadButton" onclick="uploadResumes()">Upload and Rank</button>
+      <div id="uploadStatus" class="status"></div>
+    </section>
+
+    <section>
+      <h2>Candidate Rankings</h2>
+      <div class="filters">
+        <input id="skill" placeholder="Filter by skill">
+        <input id="education" placeholder="Filter by education">
+        <input id="minExperience" type="number" placeholder="Minimum experience">
+      </div>
+      <button class="secondary" onclick="loadCandidates()">Refresh Rankings</button>
+      <button class="secondary" onclick="filterCandidates()">Apply Filter</button>
+      <button onclick="window.location='/export/shortlist?min_score=70'">Export Shortlist CSV</button>
+      <div id="rankingStatus" class="status"></div>
+      <table>
+        <thead>
+          <tr>
+            <th>Name</th><th>Email</th><th>Score</th><th>Skills</th><th>Missing</th><th>Experience</th>
+          </tr>
+        </thead>
+        <tbody id="rows"></tbody>
+      </table>
+    </section>
+  </main>
+
+  <script>
+    const splitInput = (id) => document.getElementById(id).value.split(",").map(x => x.trim()).filter(Boolean);
+    let jobSaved = false;
+
+    function setStatus(id, message, type = "info") {
+      const element = document.getElementById(id);
+      element.textContent = message;
+      element.className = `status ${type}`;
+    }
+
+    function clearStatus(id) {
+      const element = document.getElementById(id);
+      element.textContent = "";
+      element.className = "status";
+    }
+
+    async function parseResponse(response) {
+      const contentType = response.headers.get("content-type") || "";
+      if (contentType.includes("application/json")) {
+        return await response.json();
+      }
+      return {detail: await response.text()};
+    }
+
+    async function saveJob() {
+      const button = document.getElementById("saveJobButton");
+      button.disabled = true;
+      setStatus("jobStatus", "Saving job description...", "info");
+      const response = await fetch("/job-description", {
+        method: "POST",
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify({
+          title: document.getElementById("title").value,
+          description: document.getElementById("description").value,
+          required_skills: splitInput("required"),
+          preferred_skills: splitInput("preferred"),
+          minimum_experience: Number(document.getElementById("experience").value || 0)
+        })
+      });
+      const data = await parseResponse(response);
+      button.disabled = false;
+      if (!response.ok) {
+        jobSaved = false;
+        setStatus("jobStatus", data.detail || "Could not save job description.", "error");
+        return false;
+      }
+      jobSaved = true;
+      setStatus("jobStatus", "Job description saved. You can upload resumes now.", "ok");
+      return true;
+    }
+
+    async function uploadResumes() {
+      const files = document.getElementById("resumes").files;
+      if (!files.length) {
+        setStatus("uploadStatus", "Select at least one PDF or DOCX resume first.", "error");
+        return;
+      }
+
+      const button = document.getElementById("uploadButton");
+      button.disabled = true;
+      setStatus("uploadStatus", "Preparing upload...", "info");
+
+      if (!jobSaved) {
+        const saved = await saveJob();
+        if (!saved) {
+          button.disabled = false;
+          setStatus("uploadStatus", "Upload stopped because the job description could not be saved.", "error");
+          return;
+        }
+      }
+
+      const form = new FormData();
+      for (const file of files) form.append("files", file);
+      setStatus("uploadStatus", `Uploading ${files.length} resume(s)...`, "info");
+      const response = await fetch("/resumes", {method: "POST", body: form});
+      const data = await parseResponse(response);
+      button.disabled = false;
+
+      if (!response.ok) {
+        const detail = Array.isArray(data.detail) ? data.detail.map(item => item.msg).join("; ") : data.detail;
+        setStatus("uploadStatus", detail || "Resume upload failed.", "error");
+        return;
+      }
+
+      setStatus("uploadStatus", data.message || "Resumes processed.", "ok");
+      await loadCandidates();
+    }
+
+    function renderRows(candidates) {
+      document.getElementById("rows").innerHTML = candidates.map(candidate => `
+        <tr>
+          <td>${candidate.name || ""}</td>
+          <td>${candidate.email || ""}</td>
+          <td class="score">${candidate.match_score || ""}</td>
+          <td>${(candidate.skills || []).join(", ")}</td>
+          <td>${(candidate.missing_skills || []).join(", ")}</td>
+          <td>${candidate.experience_years || ""}</td>
+        </tr>
+      `).join("");
+    }
+
+    async function loadCandidates() {
+      const response = await fetch("/candidates");
+      if (!response.ok) {
+        setStatus("rankingStatus", "Could not load candidate rankings.", "error");
+        return;
+      }
+      const candidates = await response.json();
+      renderRows(candidates);
+      setStatus("rankingStatus", candidates.length ? `Loaded ${candidates.length} candidate(s).` : "No candidates uploaded yet.", candidates.length ? "ok" : "info");
+    }
+
+    async function filterCandidates() {
+      const params = new URLSearchParams();
+      if (document.getElementById("skill").value) params.set("skill", document.getElementById("skill").value);
+      if (document.getElementById("education").value) params.set("education", document.getElementById("education").value);
+      if (document.getElementById("minExperience").value) params.set("min_experience", document.getElementById("minExperience").value);
+      const response = await fetch(`/candidates/filter?${params.toString()}`);
+      if (!response.ok) {
+        setStatus("rankingStatus", "Could not apply filters.", "error");
+        return;
+      }
+      const simpleRows = await response.json();
+      document.getElementById("rows").innerHTML = simpleRows.map(candidate => `
+        <tr><td>${candidate.name || ""}</td><td>${candidate.email || ""}</td><td class="score">${candidate.match_score}</td><td></td><td></td><td></td></tr>
+      `).join("");
+      setStatus("rankingStatus", `Filter matched ${simpleRows.length} candidate(s).`, simpleRows.length ? "ok" : "info");
+    }
+
+    loadCandidates();
+  </script>
+</body>
+</html>

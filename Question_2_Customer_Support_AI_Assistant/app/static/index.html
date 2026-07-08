@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Customer Support Assistant</title>
+  <style>
+    body { margin: 0; font-family: Arial, sans-serif; background: #f7f7f4; color: #202124; }
+    header { background: #2f3a33; color: white; padding: 18px 28px; }
+    main { max-width: 980px; margin: 24px auto; padding: 0 18px; display: grid; gap: 18px; }
+    section { background: white; border: 1px solid #d8d8d0; border-radius: 8px; padding: 18px; }
+    input, textarea { width: 100%; box-sizing: border-box; padding: 10px; border: 1px solid #b8b8ad; border-radius: 6px; margin-top: 8px; }
+    textarea { min-height: 90px; resize: vertical; }
+    button { margin-top: 12px; padding: 10px 14px; border: 0; border-radius: 6px; background: #2d6a4f; color: white; cursor: pointer; }
+    .message { border-bottom: 1px solid #e2e2dc; padding: 10px 0; }
+    .role { font-weight: 700; }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Customer Support Assistant</h1>
+  </header>
+  <main>
+    <section>
+      <h2>Upload Knowledge Base</h2>
+      <input id="document" type="file" accept=".pdf,.docx,.txt">
+      <button onclick="uploadDocument()">Upload Document</button>
+    </section>
+
+    <section>
+      <h2>Chat</h2>
+      <input id="session" value="demo-session">
+      <textarea id="question" placeholder="Ask a customer support question"></textarea>
+      <button onclick="askQuestion()">Send</button>
+      <div id="chat"></div>
+    </section>
+  </main>
+
+  <script>
+    async function uploadDocument() {
+      const file = document.getElementById("document").files[0];
+      const form = new FormData();
+      form.append("file", file);
+      const response = await fetch("/documents/upload", { method: "POST", body: form });
+      alert(response.ok ? "Document indexed" : await response.text());
+    }
+
+    async function askQuestion() {
+      const sessionId = document.getElementById("session").value;
+      const question = document.getElementById("question").value;
+      const response = await fetch("/chat", {
+        method: "POST",
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify({ session_id: sessionId, question })
+      });
+      const data = await response.json();
+      document.getElementById("chat").innerHTML += `
+        <div class="message"><span class="role">You:</span> ${question}</div>
+        <div class="message"><span class="role">Assistant:</span> ${data.answer}<br>Confidence: ${data.confidence}</div>
+      `;
+      document.getElementById("question").value = "";
+    }
+  </script>
+</body>
+</html>

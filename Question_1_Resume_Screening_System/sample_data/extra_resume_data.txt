@@ -1,0 +1,23 @@
+Sample Resume 2
+
+Neha Verma
+neha.verma@example.com
++91 9123456780
+
+Backend developer with 1 year of experience in Python and Flask. Worked on SQL queries, REST APIs, Git workflows, and dashboard reporting.
+
+Skills: Python, Flask, SQL, Git, Excel
+Education: Bachelor of Computer Applications
+Certification: Certificate in Backend Web Development
+
+Sample Resume 3
+
+Rahul Mehta
+rahul.mehta@example.com
++91 9988776655
+
+Machine learning fresher with academic project experience in NLP classification and data analysis.
+
+Skills: Python, NLP, Pandas, NumPy, scikit-learn
+Education: B.Tech in Artificial Intelligence and Data Science
+Certification: Certified Data Analytics Fundamentals

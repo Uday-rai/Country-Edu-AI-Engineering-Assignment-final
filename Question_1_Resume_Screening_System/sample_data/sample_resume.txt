@@ -1,0 +1,12 @@
+Uday Sharma
+uday.sharma@example.com
++91 9876543210
+
+AI Engineer Intern candidate with 2 years of experience building Python applications.
+
+Skills: Python, FastAPI, SQL, NLP, scikit-learn, Docker, Git, Pandas
+Education: B.Tech in Computer Science
+Certification: Certified Machine Learning Foundations
+
+Projects:
+Built a document search API using TF-IDF similarity, FastAPI, and SQL database storage.
